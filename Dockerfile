@@ -35,6 +35,8 @@ RUN apt update -q && apt install -qy \
     "$PCITEPROC" \
     # XFig utilities
     "$FIG2DEV" \
+    # important utils
+    htop nano \
     # syntax highlighting package
     "$PYGMENTS" && \
     # Removing documentation packages *after* installing them is kind of hacky,
