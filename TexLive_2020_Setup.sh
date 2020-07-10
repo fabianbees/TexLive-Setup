@@ -93,4 +93,4 @@ sudo rm -rf /tmp/texlive-install
 
 echo "Tex-Live was installed successfully!"
 
-echo "\nFor the best experience use this extention in Visual Studio Code: https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop"
+echo "For the best experience use this extention in Visual Studio Code: https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop"

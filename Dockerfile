@@ -58,6 +58,8 @@ RUN chmod +x /tmp/TexLive_2020_Setup.sh; \
 
 #ENV PATH="/usr/local/texlive/2020/bin/x86_64-linux:${PATH}"
 
+RUN ~/update_texlive.sh
+
 
 ENV HOME /data
 
