@@ -1,4 +1,5 @@
 FROM ubuntu:20.04
+#FROM alpine
 
 ARG USER_NAME=latex
 ARG USER_HOME=/home/latex
@@ -47,25 +48,20 @@ RUN apt update -q && apt install -qy \
 
 # Install TexLive with scheme-basic
 
-RUN wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz; \
-	mkdir /install-tl-unx; \
-	tar -xf install-tl-unx.tar.gz -C /install-tl-unx --strip-components=1; \
-    echo "selected_scheme scheme-basic" >> /install-tl-unx/texlive.profile; \
-	/install-tl-unx/install-tl -profile /install-tl-unx/texlive.profile; \
-    rm -r /install-tl-unx; \
-	rm install-tl-unx.tar.gz
 
-ENV PATH="/usr/local/texlive/2020/bin/x86_64-linux:${PATH}"
+
+COPY TexLive_2020_Setup.sh /tmp/
+
+RUN chmod +x /tmp/TexLive_2020_Setup.sh; \
+    /tmp/TexLive_2020_Setup.sh; \
+    rm /tmp/TexLive_2020_Setup.sh
+
+#ENV PATH="/usr/local/texlive/2020/bin/x86_64-linux:${PATH}"
+
 
 ENV HOME /data
 
 WORKDIR /data
-
-# Install latex packages (FULL)
-
-RUN tlmgr update --self; \
-    tlmgr install scheme-full; \
-    tlmgr update --all
 
 
 VOLUME ["/data"]
