@@ -1,5 +1,4 @@
-FROM ubuntu:20.04
-#FROM alpine
+FROM alpine
 
 ARG USER_NAME=latex
 ARG USER_HOME=/home/latex
@@ -13,52 +12,41 @@ RUN adduser \
   --disabled-password \
   "$USER_NAME"
 
-ARG WGET=wget
-ARG GIT=git
-ARG MAKE=make
-ARG SUDO=sudo
-ARG PANDOC=pandoc
-ARG PCITEPROC=pandoc-citeproc
-ARG PYGMENTS=python3-pygments
-ARG FIG2DEV=fig2dev
-
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-
-RUN apt update -q && apt install -qy \
+RUN apk update && apk add \
     # some auxiliary tools
-    "$WGET" \
-    "$GIT" \
-    "$MAKE" \
-    "$SUDO" \
+    wget \
+    git \
+    make \
     # markup format conversion tool
-    "$PANDOC" \
-    "$PCITEPROC" \
+    #"$PANDOC" \
+    #"$PCITEPROC" \
     # XFig utilities
-    "$FIG2DEV" \
+    #"$FIG2DEV" \
     # important utils
-    htop nano \
+    htop \
+    nano \
     # syntax highlighting package
-    "$PYGMENTS" && \
-    # Removing documentation packages *after* installing them is kind of hacky,
-    # but it only adds some overhead while building the image.
-    apt --purge remove -y .\*-doc$ && \
-    # Remove more unnecessary stuff
-    apt clean -y && \
-    apt autoremove && \
-    rm -rf /var/lib/apt/lists/* && \
-    echo "ALL ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+    #"$PYGMENTS"mkdir /tmp/texlive-install
+    perl \
+    ca-certificates
 
-# Install TexLive with scheme-basic
+COPY texlive2020.profile /
+# This file is needed for the glossary to work
+COPY .latexmkrc /
+COPY update_texlive.sh /
 
+RUN wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz && \
+    tar xvzf install-tl-unx.tar.gz && \
+    cd ./install-tl-2* && \
+    #start installation
+    ./install-tl --profile=/texlive2020.profile && \
+    cd ~ && \
+    rm -rf /install-tl-2* && \
+    rm /texlive2020.profile && \
+    chmod +x /update_texlive.sh  && \
+    mv /update_texlive.sh ~ && \
+    mv /.latexmkrc ~
 
-
-COPY TexLive_2020_Setup.sh /tmp/
-
-RUN chmod +x /tmp/TexLive_2020_Setup.sh; \
-    /tmp/TexLive_2020_Setup.sh; \
-    rm /tmp/TexLive_2020_Setup.sh
-
-#ENV PATH="/usr/local/texlive/2020/bin/x86_64-linux:${PATH}"
 
 RUN ~/update_texlive.sh
 
