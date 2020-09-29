@@ -1,0 +1,35 @@
+{
+    "window.zoomLevel": 1,
+    "git.path": "wslgit.exe",
+    
+    "latex-workshop.intellisense.package.enabled": true,
+    "latex-workshop.latex.clean.subfolder.enabled": true,
+    "latex-workshop.view.pdf.viewer": "tab",
+    "latex-workshop.latex.recipes": [{
+        "name": "Build using debian-wsl",
+        "tools": [
+          "debian-wsl"
+        ]
+      }],
+      "latex-workshop.latex.tools": [{
+          "name": "debian-wsl",
+          "command": "debian",
+          "args": [
+              "-c",
+              "latexmk",
+              //"-bibtex",
+              "-synctex=1",
+              "-interaction=nonstopmode",
+              "-pdf"//,
+              //"%DOC%.tex"
+          ]
+      }
+    ],
+    "latex-workshop.intellisense.citation.maxfilesizeMB": 10,
+    
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 200,
+    "editor.suggestSelection": "first",
+    "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue"
+
+}
