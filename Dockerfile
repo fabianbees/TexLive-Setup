@@ -17,6 +17,7 @@ RUN apk update && apk add \
     wget \
     git \
     make \
+    xz \
     # markup format conversion tool
     #"$PANDOC" \
     #"$PCITEPROC" \
@@ -30,10 +31,10 @@ RUN apk update && apk add \
     perl \
     ca-certificates
 
-COPY texlive2020.profile /
+COPY ./files/texlive2020.profile /
 # This file is needed for the glossary to work
-COPY .latexmkrc /
-COPY update_texlive.sh /
+COPY ./files/.latexmkrc /
+COPY ./files/update_texlive.sh /
 
 RUN wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz && \
     tar xvzf install-tl-unx.tar.gz && \
