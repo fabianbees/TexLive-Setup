@@ -1,0 +1,20 @@
+image: docker:latest
+
+stages:
+- build
+- release
+
+
+before_script:
+  - docker info
+  - echo "$DOCKER_REGISTRY_PASS" | docker login $DOCKER_REGISTRY --username $DOCKER_REGISTRY_USER --password-stdin
+
+build:
+  stage: build
+  script:
+  - docker build -t registry.fabianbees.de/fabianbees/texlive-setup:latest .
+
+release-image:
+  stage: release
+  script:
+  - docker push registry.fabianbees.de/fabianbees/texlive-setup:latest
