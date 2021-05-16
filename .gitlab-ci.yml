@@ -1,0 +1,112 @@
+variables:
+  CI_BUILD_IMAGE: "registry.gitlab.com/ericvh/docker-buildx-qemu"
+
+.build:
+  image: $CI_BUILD_IMAGE
+  stage: build
+  services:
+    - name: docker:dind
+      entrypoint: ["env", "-u", "DOCKER_HOST"]
+      command: ["dockerd-entrypoint.sh"]
+  variables:
+    DOCKER_DRIVER: overlay2
+    # See https://github.com/docker-library/docker/pull/166
+    DOCKER_TLS_CERTDIR: ""
+  retry: 2
+  before_script:
+    - |
+      if [[ -z "$CI_COMMIT_TAG" ]]; then
+        export CI_APPLICATION_REPOSITORY=${CI_APPLICATION_REPOSITORY:-$CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG}
+        export CI_APPLICATION_TAG=${CI_APPLICATION_TAG:-$CI_COMMIT_SHA}
+      else
+        export CI_APPLICATION_REPOSITORY=${CI_APPLICATION_REPOSITORY:-$CI_REGISTRY_IMAGE}
+        export CI_APPLICATION_TAG=${CI_APPLICATION_TAG:-$CI_COMMIT_TAG}
+      fi
+    - echo "$REGISTRY_PASS" | docker login $REGISTRY --username $REGISTRY_USER --password-stdin
+
+build:buildx-master:
+  extends: .build
+  only: 
+    refs:
+      - master
+    variables:
+      - $CI_BUILDX_ARCHS
+  script:
+    # Use docker-container driver to allow useful features (push/multi-platform)
+    - update-binfmts --enable # Important: Ensures execution of other binary formats is enabled in the kernel
+    - docker buildx create --driver docker-container --use
+    - docker buildx inspect --bootstrap
+    - docker buildx ls
+    - docker buildx build --platform $CI_BUILDX_ARCHS --progress plain --pull -t "$CI_REGISTRY_IMAGE" --push .
+
+build:buildx:
+  extends: .build
+  only:
+    variables:
+      - $CI_BUILDX_ARCHS
+  except:
+    refs:
+       - master
+  script:
+    - update-binfmts --enable # Important: Ensures execution of other binary formats is enabled in the kernel
+    - docker buildx create --driver docker-container --use
+    - docker buildx inspect --bootstrap
+    - docker buildx ls
+    - docker buildx build --platform $CI_BUILDX_ARCHS --progress plain --pull -t "$CI_APPLICATION_REPOSITORY:$CI_APPLICATION_TAG" --push .
+
+# disable build:armv7 for now since it seems to have an issue with dind
+.build:arm:
+  image: docker:dind
+  extends: .build
+  only:
+    variables:
+      - $CI_BUILD_ARM
+  except:
+    variables:
+      - $CI_BUILDX_ARCHS
+  tags:
+    - arm
+  script:
+    - docker build -t "$CI_APPLICATION_REPOSITORY/arm:$CI_APPLICATION_TAG" .
+    - docker push "$CI_APPLICATION_REPOSITORY/arm:$CI_APPLICATION_TAG"
+
+build:arm64:
+  extends: .build
+  only:
+    variables:
+      - $CI_BUILD_ARM64
+  except:
+    variables:
+      - $CI_BUILDX_ARCHS
+  tags:
+    - arm64
+
+  script:
+    - docker build -t "$CI_APPLICATION_REPOSITORY/arm64:$CI_APPLICATION_TAG" .
+    - docker push "$CI_APPLICATION_REPOSITORY/arm64:$CI_APPLICATION_TAG"
+
+build:amd64:
+  extends: .build
+  except:
+    variables:
+      - $CI_AMD64_DISABLED
+      - $CI_BUILDX_ARCHS
+  script:
+    - docker build -t "$CI_APPLICATION_REPOSITORY/amd64:$CI_APPLICATION_TAG" .
+    - docker push "$CI_APPLICATION_REPOSITORY/amd64:$CI_APPLICATION_TAG"  
+
+build:manifest:
+  extends: .build
+  stage: deploy
+  except:
+    variables:
+      - $CI_BUILDX_ARCHS
+  script:
+    - echo "Checking amd86 build..." && [[ -z $CI_AMD64_DISABLE ]] && echo "found" && export CI_MANIFEST_LIST="$CI_APPLICATION_REPOSITORY/amd64:$CI_APPLICATION_TAG"
+    - echo "Checking arm build..." && [[ $CI_BUILD_ARM ]] && echo "found" && export CI_MANIFEST_LIST="$CI_MANIFEST_LIST $CI_APPLICATION_REPOSITORY/arm:$CI_APPLICATION_TAG"
+    - echo "Checking arm64 build..." && [[ $CI_BUILD_ARM64 ]] && echo "found" && export CI_MANIFEST_LIST="$CI_MANIFEST_LIST $CI_APPLICATION_REPOSITORY/arm64:$CI_APPLICATION_TAG"
+    - export DOCKER_CLI_EXPERIMENTAL=enabled
+    - echo $CI_MANIFEST_LIST
+    - docker manifest create $CI_APPLICATION_REPOSITORY:$CI_APPLICATION_TAG $CI_MANIFEST_LIST && docker manifest push $CI_APPLICATION_REPOSITORY:$CI_APPLICATION_TAG
+    - docker manifest create $CI_APPLICATION_REPOSITORY:latest $CI_MANIFEST_LIST && docker manifest push $CI_APPLICATION_REPOSITORY:latest
+    - echo "Checking master" && [[ $CI_COMMIT_REF_NAME == "master" ]] && docker manifest create $CI_REGISTRY_IMAGE:latest $CI_MANIFEST_LIST && docker manifest push $CI_REGISTRY_IMAGE:latest
