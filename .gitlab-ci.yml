@@ -3,6 +3,8 @@ variables:
   CI_BUILD_AMD64: "enabled"
   CI_BUILD_ARM64: "enabled"
   CI_BUILD_ARMv7: ""
+  # For using DOCKER_HUB as registry, set this Var to "true"
+  DOCKER_HUB: "true"
 
 
 # Build Stages
@@ -18,14 +20,17 @@ stages:
   before_script:
     - |
       if [[ -z "$CI_COMMIT_TAG" ]]; then
-        export CI_APPLICATION_REPOSITORY=${CI_APPLICATION_REPOSITORY:-$CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG}
-        export CI_APPLICATION_TAG=${CI_APPLICATION_TAG:-$CI_COMMIT_SHA}
+        export CI_APPLICATION_TAG="latest"
       else
-        export CI_APPLICATION_REPOSITORY=${CI_APPLICATION_REPOSITORY:-$CI_REGISTRY_IMAGE}
         export CI_APPLICATION_TAG=${CI_APPLICATION_TAG:-$CI_COMMIT_TAG}
       fi
-    - echo "$REGISTRY_PASS" | docker login $REGISTRY --username $REGISTRY_USER --password-stdin
-
+    - |
+      if [[ "$DOCKER_HUB" == "true" ]]; then
+        export CI_REGISTRY_IMAGE=$CI_PROJECT_PATH
+        echo "$DOCKER_REGISTRY_PASS" | docker login $DOCKER_REGISTRY --username $DOCKER_REGISTRY_USER --password-stdin
+      else
+        echo "$REGISTRY_PASS" | docker login $REGISTRY --username $REGISTRY_USER --password-stdin
+      fi
 
 
 # AMD64 Build
@@ -37,8 +42,8 @@ build:amd64:
   tags:
     - amd64
   script:
-    - docker build -t "$CI_APPLICATION_REPOSITORY/amd64:$CI_APPLICATION_TAG" .
-    - docker push "$CI_APPLICATION_REPOSITORY/amd64:$CI_APPLICATION_TAG" 
+    - docker build -t "$CI_REGISTRY_IMAGE:$CI_APPLICATION_TAG-amd64" .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_APPLICATION_TAG-amd64" 
 
 
 # ARM64 Build
@@ -50,8 +55,8 @@ build:arm64:
   tags:
     - arm64
   script:
-    - docker build -t "$CI_APPLICATION_REPOSITORY/arm64:$CI_APPLICATION_TAG" .
-    - docker push "$CI_APPLICATION_REPOSITORY/arm64:$CI_APPLICATION_TAG"
+    - docker build -t "$CI_REGISTRY_IMAGE:$CI_APPLICATION_TAG-arm64" .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_APPLICATION_TAG-arm64"
 
 
 # ARMv7 Build
@@ -63,8 +68,8 @@ build:armv7:
   tags:
     - armv7
   script:
-    - docker build -t "$CI_APPLICATION_REPOSITORY/armv7:$CI_APPLICATION_TAG" .
-    - docker push "$CI_APPLICATION_REPOSITORY/armv7:$CI_APPLICATION_TAG"
+    - docker build -t "$CI_REGISTRY_IMAGE:$CI_APPLICATION_TAG-armv7" .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_APPLICATION_TAG-armv7"
 
 
 
@@ -73,12 +78,9 @@ build:manifest:
   extends: .build
   stage: release
   script:
-    - echo "Checking amd86 build..." && [[ $CI_BUILD_AMD64 ]] && echo "found" && export CI_MANIFEST_LIST="$CI_APPLICATION_REPOSITORY/amd64:$CI_APPLICATION_TAG"
-    - echo "Checking arm64 build..." && [[ $CI_BUILD_ARM64 ]] && echo "found" && export CI_MANIFEST_LIST="$CI_MANIFEST_LIST $CI_APPLICATION_REPOSITORY/arm64:$CI_APPLICATION_TAG"
-    - echo "Checking arm build..." && [[ $CI_BUILD_ARMv7 ]] && echo "found" && export CI_MANIFEST_LIST="$CI_MANIFEST_LIST $CI_APPLICATION_REPOSITORY/arm:$CI_APPLICATION_TAG"
+    - echo "Checking amd86 build..." && [[ $CI_BUILD_AMD64 ]] && echo "found" && export CI_MANIFEST_LIST="$CI_REGISTRY_IMAGE:$CI_APPLICATION_TAG-amd64"
+    - echo "Checking arm64 build..." && [[ $CI_BUILD_ARM64 ]] && echo "found" && export CI_MANIFEST_LIST="$CI_MANIFEST_LIST $CI_REGISTRY_IMAGE:$CI_APPLICATION_TAG-arm64"
+    - echo "Checking arm build..." && [[ $CI_BUILD_ARMv7 ]] && echo "found" && export CI_MANIFEST_LIST="$CI_MANIFEST_LIST $CI_REGISTRY_IMAGE:$CI_APPLICATION_TAG-armv7"
     - export DOCKER_CLI_EXPERIMENTAL=enabled
     - echo $CI_MANIFEST_LIST
-    - docker manifest create $CI_APPLICATION_REPOSITORY:$CI_APPLICATION_TAG $CI_MANIFEST_LIST && docker manifest push $CI_APPLICATION_REPOSITORY:$CI_APPLICATION_TAG
-    - docker manifest create $CI_APPLICATION_REPOSITORY:latest $CI_MANIFEST_LIST && docker manifest push $CI_APPLICATION_REPOSITORY:latest
-    - docker manifest create $CI_REGISTRY_IMAGE:latest $CI_MANIFEST_LIST && docker manifest push $CI_REGISTRY_IMAGE:latest
-    #- echo "Checking master" && [[ $CI_COMMIT_REF_NAME == "master" ]] && docker manifest create $CI_REGISTRY_IMAGE:latest $CI_MANIFEST_LIST && docker manifest push $CI_REGISTRY_IMAGE:latest
+    - docker manifest create $CI_REGISTRY_IMAGE:$CI_APPLICATION_TAG $CI_MANIFEST_LIST && docker manifest push $CI_REGISTRY_IMAGE:$CI_APPLICATION_TAG
