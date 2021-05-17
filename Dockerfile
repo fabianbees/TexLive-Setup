@@ -31,7 +31,7 @@ RUN apk update && apk add \
     perl \
     ca-certificates
 
-COPY ./files/texlive2020.profile /
+COPY ./files/texlive2021.profile /
 # This file is needed for the glossary to work
 COPY ./files/.latexmkrc /
 COPY ./files/update_texlive.sh /
@@ -40,10 +40,10 @@ RUN wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz && \
     tar xvzf install-tl-unx.tar.gz && \
     cd ./install-tl-2* && \
     #start installation
-    ./install-tl --profile=/texlive2020.profile && \
+    ./install-tl --profile=/texlive2021.profile && \
     cd ~ && \
     rm -rf /install-tl-2* && \
-    rm /texlive2020.profile && \
+    rm /texlive2021.profile && \
     chmod +x /update_texlive.sh  && \
     mv /update_texlive.sh ~ && \
     mv /.latexmkrc ~

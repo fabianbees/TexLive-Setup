@@ -1,20 +1,3 @@
-#!/bin/bash
-
-sudo apt update -y
-sudo apt upgrade -y
-
-sudo apt install perl ca-certificates wget -y
-
-mkdir /tmp/texlive-install
-cd /tmp/texlive-install
-
-wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz
-tar xvzf install-tl-unx.tar.gz
-cd ./install-tl-2*
-
-
-# Config-File for TexLive 2021
-cat > ./texlive-custom_2021.profile << EOF
 # texlive.profile written on Mon May 17 08:31:10 2021 UTC
 # It will NOT be updated and reflects only the
 # installation profile at installation time.
@@ -71,32 +54,3 @@ tlpdbopt_sys_bin /usr/local/bin
 tlpdbopt_sys_info /usr/local/info
 tlpdbopt_sys_man /usr/local/man
 tlpdbopt_w32_multi_user 1
-EOF
-
-
-# This file is needed for the glossary to work
-cat > ~/.latexmkrc << EOF
-add_cus_dep('glo', 'gls', 0, 'makeglo2gls');
-sub makeglo2gls {
-    system("makeindex -s '$_[0]'.ist -t '$_[0]'.glg -o '$_[0]'.gls '$_[0]'.glo");
-}
-EOF
-
-cat > ~/update_texlive.sh << EOF
-#!/bin/bash
-sudo tlmgr update --self
-sudo tlmgr update --all
-EOF
-
-sudo chmod +x ~/update_texlive.sh
-
-#start installation
-sudo ./install-tl --profile=texlive-custom_2021.profile
-
-cd ~
-sudo rm -rf /tmp/texlive-install
-
-
-echo "Tex-Live was installed successfully!"
-
-echo "For the best experience use this extention in Visual Studio Code: https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop"
