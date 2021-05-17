@@ -14,7 +14,6 @@ RUN adduser \
 
 RUN apk update && apk add \
     # some auxiliary tools
-    bash \
     wget \
     git \
     make \
@@ -32,33 +31,31 @@ RUN apk update && apk add \
     perl \
     ca-certificates
 
-COPY ./files/texlive2021.profile /home/latex/
+COPY ./files/texlive2021.profile /
 # This file is needed for the glossary to work
-COPY ./files/.latexmkrc /home/latex/
-COPY ./files/update_texlive.sh /home/latex/
+COPY ./files/.latexmkrc /
+COPY ./files/update_texlive.sh /
 
-RUN cd /home/latex/ && \
-    apkArch="$(apk --print-arch)"; \
+RUN apkArch="$(apk --print-arch)"; \
     case "$apkArch" in \
-        aarch64) echo "binary_aarch64-linux 1" >> ./texlive2021.profile ;; \
-        x86) echo "binary_x86_64-linux 1" >> ./texlive2021.profile ;; \
-        armhf) echo "binary_armhf-linux 1" >> ./texlive2021.profile ;; \
+        aarch64) echo "binary_aarch64-linux 1" >> /texlive2021.profile ;; \
+        x86) echo "binary_x86_64-linux 1" >> /texlive2021.profile ;; \
+        armhf) echo "binary_armhf-linux 1" >> /texlive2021.profile ;; \
     esac; \
     wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz && \
     tar xvzf install-tl-unx.tar.gz && \
     cd ./install-tl-2* && \
     #start installation
-    ./install-tl --profile ../texlive2021.profile && \
-    cd /home/latex/ && \
-    rm -rf ./install-tl-2* && \
-    rm ./texlive2021.profile && \
-    chmod +x ./update_texlive.sh  && \
-    mv ./update_texlive.sh /bin/ && \
-    mv ./.latexmkrc /home/latex/ && \
-    chown latex:latex /home/latex/.latexmkrc
+    ./install-tl --profile=/texlive2021.profile && \
+    cd ~ && \
+    rm -rf /install-tl-2* && \
+    rm /texlive2021.profile && \
+    chmod +x /update_texlive.sh  && \
+    mv /update_texlive.sh ~ && \
+    mv /.latexmkrc ~
 
 
-RUN /home/latex/update_texlive.sh
+RUN ~/update_texlive.sh
 
 
 ENV HOME /data

@@ -9,9 +9,6 @@ TEXMFLOCAL /usr/local/texlive/texmf-local
 TEXMFSYSCONFIG /usr/local/texlive/2021/texmf-config
 TEXMFSYSVAR /usr/local/texlive/2021/texmf-var
 TEXMFVAR ~/.texlive2021/texmf-var
-# Not needed: texlive-installer will autodetect
-#binary_aarch64-linux 1
-#binary_x86_64-linux 1
 collection-basic 1
 collection-bibtexextra 1
 collection-binextra 1
