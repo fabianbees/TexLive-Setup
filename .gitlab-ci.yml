@@ -5,6 +5,8 @@ variables:
   CI_BUILD_ARMv7: ""
   # For using DOCKER_HUB as registry, set this Var to "true"
   DOCKER_HUB: "true"
+  # Override CI_PROJECT_PATH for using correct DOCKERHUB path
+  CI_PROJECT_PATH: "fabianbees/texlive"
 
 
 # Build Stages
