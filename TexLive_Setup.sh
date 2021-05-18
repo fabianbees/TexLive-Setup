@@ -51,10 +51,13 @@ guard_run_as_root () {
 }
 
 
+
 function fail {
   echo $1 >&2
   exit 1
 }
+
+trap 'fail "The execution was aborted because a command exited with an error status code."' ERR
 
 function retry {
   local n=1
@@ -195,22 +198,6 @@ case $(arch) in
 esac
 
 
-# This file is needed for the glossary to work
-cat > ~/.latexmkrc << EOF
-add_cus_dep('glo', 'gls', 0, 'makeglo2gls');
-sub makeglo2gls {
-    system("makeindex -s '$_[0]'.ist -t '$_[0]'.glg -o '$_[0]'.gls '$_[0]'.glo");
-}
-EOF
-
-cat > ~/update_texlive.sh << EOF
-#!/bin/bash
-sudo tlmgr update --self
-sudo tlmgr update --all
-EOF
-
-chmod +x ~/update_texlive.sh
-
 #start installation
 if [ $install_version == 'full' ]
 then
@@ -224,9 +211,25 @@ else
     echo "ERROR: trying to install a unknown version of texlive!"
 fi
 
-
 cd ~
 rm -rf /tmp/texlive-install
+
+
+# This file is needed for the glossary to work
+cat > ~/.latexmkrc << EOF
+add_cus_dep('glo', 'gls', 0, 'makeglo2gls');
+sub makeglo2gls {
+    system("makeindex -s '$_[0]'.ist -t '$_[0]'.glg -o '$_[0]'.gls '$_[0]'.glo");
+}
+EOF
+
+cat > /usr/local/texlive/update_texlive.sh << EOF
+#!/bin/bash
+sudo tlmgr update --self
+sudo tlmgr update --all
+EOF
+chmod +x /usr/local/texlive/update_texlive.sh
+ln -s /usr/local/texlive/update_texlive.sh /usr/local/bin/update_texlive.sh
 
 
 echo "Tex-Live was installed successfully!"

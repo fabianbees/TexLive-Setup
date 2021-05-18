@@ -24,6 +24,7 @@ RUN apt update && apt install -y \
     nano \
     perl \
     ca-certificates \
+    gpg \
     pandoc \
     pandoc-citeproc \
     python3-pygments \
@@ -38,19 +39,23 @@ RUN apt update && apt install -y \
     echo "ALL ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 
+USER latex
+
 COPY TexLive_Setup.sh /tmp/
 
-RUN chmod +x /tmp/TexLive_Setup.sh; \
+RUN sudo chmod +x /tmp/TexLive_Setup.sh; \
     #start installation
     case "$MINIMAL_INSTALLATION" in \
-        true) echo "MINIMAL INSTALLATION" && su - latex -c "sudo /tmp/TexLive_Setup.sh --min" ;; \
-        false) echo "FULL INSTALLATION" && su - latex -c "sudo /tmp/TexLive_Setup.sh --full" ;; \
+        true) echo "MINIMAL INSTALLATION" && sudo /tmp/TexLive_Setup.sh --min ;; \
+        false) echo "FULL INSTALLATION" && sudo /tmp/TexLive_Setup.sh --full ;; \
         *) echo "NO INSTALLATION CANDIDATE" ;; \
     esac; \
-    rm /tmp/TexLive_Setup.sh
+    sudo rm /tmp/TexLive_Setup.sh && \
+    sudo mv /root/.latexmkrc /home/latex && sudo chown latex:latex /home/latex
 
 
-ENV HOME /data
+RUN sudo update_texlive.sh
+
 
 WORKDIR /data
 
