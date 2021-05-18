@@ -50,9 +50,33 @@ guard_run_as_root () {
   fi  
 }
 
+
+function fail {
+  echo $1 >&2
+  exit 1
+}
+
+function retry {
+  local n=1
+  local max=10
+  local delay=30
+
+  while true; do
+    "$@" && break || {
+      if [[ $n -lt $max ]]; then
+        ((n++))
+        echo "Command failed. Attempt $n/$max:"
+        sleep $delay;
+      else
+        fail "The command has failed after $n attempts."
+      fi
+    }
+  done
+}
+
+
+# Ask for root execution
 guard_run_as_root
-
-
 
 
 apt update -y
@@ -191,15 +215,11 @@ chmod +x ~/update_texlive.sh
 if [ $install_version == 'full' ]
 then
     echo "FULL INSTALLATION"
-    for i in {1..5}; do
-        ./install-tl --profile ./texlive-custom_2021.profile && break || sleep 15;
-    done
+    retry ./install-tl --profile ./texlive-custom_2021.profile
 elif [ $install_version == 'min' ]
 then
     echo "MINIMAL INSTALLATION"
-    for i in {1..5}; do
-        ./install-tl --profile ./texlive-MINIMAL_2021.profile && break || sleep 15;
-    done
+    retry ./install-tl --profile ./texlive-MINIMAL_2021.profile
 else
     echo "ERROR: trying to install a unknown version of texlive!"
 fi

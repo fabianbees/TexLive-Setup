@@ -36,16 +36,18 @@ RUN apt update && apt install -y \
     apt autoremove && \
     rm -rf /var/lib/apt/lists/* && \
     echo "ALL ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-    #echo "$USER_NAME ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/user && \
-    #chmod 0440 "/etc/sudoers.d/$USER_NAME"
 
 
 COPY TexLive_Setup.sh /tmp/
 
 RUN chmod +x /tmp/TexLive_Setup.sh; \
-    su - latex -c "sudo /tmp/TexLive_Setup.sh --min"; \
+    #start installation
+    case "$MINIMAL_INSTALLATION" in \
+        true) echo "MINIMAL INSTALLATION" && su - latex -c "sudo /tmp/TexLive_Setup.sh --min" ;; \
+        false) echo "FULL INSTALLATION" && su - latex -c "sudo /tmp/TexLive_Setup.sh --full" ;; \
+        *) echo "NO INSTALLATION CANDIDATE" ;; \
+    esac; \
     rm /tmp/TexLive_Setup.sh
-
 
 
 ENV HOME /data
