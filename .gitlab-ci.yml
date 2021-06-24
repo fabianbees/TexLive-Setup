@@ -44,7 +44,7 @@ build:amd64:
   tags:
     - amd64
   script:
-    - docker build -t "$CI_REGISTRY_IMAGE:$CI_APPLICATION_TAG-amd64" .
+    - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_APPLICATION_TAG-amd64" .
     - docker push "$CI_REGISTRY_IMAGE:$CI_APPLICATION_TAG-amd64" 
 
 
@@ -57,7 +57,7 @@ build:arm64:
   tags:
     - arm64
   script:
-    - docker build -t "$CI_REGISTRY_IMAGE:$CI_APPLICATION_TAG-arm64" .
+    - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_APPLICATION_TAG-arm64" .
     - docker push "$CI_REGISTRY_IMAGE:$CI_APPLICATION_TAG-arm64"
 
 
@@ -70,7 +70,7 @@ build:armv7:
   tags:
     - armv7
   script:
-    - docker build -t "$CI_REGISTRY_IMAGE:$CI_APPLICATION_TAG-armv7" .
+    - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_APPLICATION_TAG-armv7" .
     - docker push "$CI_REGISTRY_IMAGE:$CI_APPLICATION_TAG-armv7"
 
 
