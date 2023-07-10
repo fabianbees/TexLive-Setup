@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-install_version="min"
+install_version="full"
 
 
 #####
