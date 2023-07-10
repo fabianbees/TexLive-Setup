@@ -95,19 +95,19 @@ tar xvzf install-tl-unx.tar.gz
 cd ./install-tl-2*
 
 
-# Config-File for TexLive 2022
-cat > ./texlive-custom_2022.profile << EOF
-# texlive.profile written on Mon May 17 08:31:10 2022 UTC
+# Config-File for TexLive 2023
+cat > ./texlive-custom_2023.profile << EOF
+# texlive.profile written on Mon May 17 08:31:10 2023 UTC
 # It will NOT be updated and reflects only the
 # installation profile at installation time.
 selected_scheme scheme-custom
-TEXDIR /usr/local/texlive/2022
-TEXMFCONFIG ~/.texlive2022/texmf-config
+TEXDIR /usr/local/texlive/2023
+TEXMFCONFIG ~/.texlive2023/texmf-config
 TEXMFHOME ~/texmf
 TEXMFLOCAL /usr/local/texlive/texmf-local
-TEXMFSYSCONFIG /usr/local/texlive/2022/texmf-config
-TEXMFSYSVAR /usr/local/texlive/2022/texmf-var
-TEXMFVAR ~/.texlive2022/texmf-var
+TEXMFSYSCONFIG /usr/local/texlive/2023/texmf-config
+TEXMFSYSVAR /usr/local/texlive/2023/texmf-var
+TEXMFVAR ~/.texlive2023/texmf-var
 collection-basic 1
 collection-bibtexextra 1
 collection-binextra 1
@@ -152,19 +152,19 @@ tlpdbopt_sys_man /usr/local/man
 tlpdbopt_w32_multi_user 1
 EOF
 
-# Config-File for TexLive 2022
-cat > ./texlive-MINIMAL_2022.profile << EOF
-# texlive.profile written on Tue May 18 07:14:59 2022 UTC
+# Config-File for TexLive 2023
+cat > ./texlive-MINIMAL_2023.profile << EOF
+# texlive.profile written on Tue May 18 07:14:59 2023 UTC
 # It will NOT be updated and reflects only the
 # installation profile at installation time.
 selected_scheme scheme-basic
-TEXDIR /usr/local/texlive/2022
-TEXMFCONFIG ~/.texlive2022/texmf-config
+TEXDIR /usr/local/texlive/2023
+TEXMFCONFIG ~/.texlive2023/texmf-config
 TEXMFHOME ~/texmf
 TEXMFLOCAL /usr/local/texlive/texmf-local
-TEXMFSYSCONFIG /usr/local/texlive/2022/texmf-config
-TEXMFSYSVAR /usr/local/texlive/2022/texmf-var
-TEXMFVAR ~/.texlive2022/texmf-var
+TEXMFSYSCONFIG /usr/local/texlive/2023/texmf-config
+TEXMFSYSVAR /usr/local/texlive/2023/texmf-var
+TEXMFVAR ~/.texlive2023/texmf-var
 instopt_adjustpath 1
 instopt_adjustrepo 1
 instopt_letter 0
@@ -187,13 +187,13 @@ EOF
 
 case $(arch) in 
     aarch64)
-        echo "binary_aarch64-linux 1" | tee -a ./texlive-custom_2022.profile ./texlive-MINIMAL_2022.profile
+        echo "binary_aarch64-linux 1" | tee -a ./texlive-custom_2023.profile ./texlive-MINIMAL_2023.profile
         ;;
     x86)
-        echo "binary_x86_64-linux 1" | tee -a ./texlive-custom_2022.profile ./texlive-MINIMAL_2022.profile
+        echo "binary_x86_64-linux 1" | tee -a ./texlive-custom_2023.profile ./texlive-MINIMAL_2023.profile
         ;;
     armhf)
-        echo "binary_armhf-linux 1" | tee -a ./texlive-custom_2022.profile ./texlive-MINIMAL_2022.profile
+        echo "binary_armhf-linux 1" | tee -a ./texlive-custom_2023.profile ./texlive-MINIMAL_2023.profile
         ;;
 esac
 
@@ -202,11 +202,11 @@ esac
 if [ $install_version == 'full' ]
 then
     echo "FULL INSTALLATION"
-    retry ./install-tl --profile ./texlive-custom_2022.profile
+    retry ./install-tl --profile ./texlive-custom_2023.profile
 elif [ $install_version == 'min' ]
 then
     echo "MINIMAL INSTALLATION"
-    retry ./install-tl --profile ./texlive-MINIMAL_2022.profile
+    retry ./install-tl --profile ./texlive-MINIMAL_2023.profile
 else
     echo "ERROR: trying to install a unknown version of texlive!"
 fi

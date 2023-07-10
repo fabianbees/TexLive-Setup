@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 ARG USER_NAME=latex
 ARG USER_HOME=/home/latex
@@ -29,6 +29,9 @@ RUN apt update && apt install -y \
     pandoc-citeproc \
     python3-pygments \
     fig2dev \
+    qpdf \
+    exiftool \
+    ghostscript \
     # Removing documentation packages *after* installing them is kind of hacky,
     # but it only adds some overhead while building the image.
     && apt --purge remove -y .\*-doc$ && \
