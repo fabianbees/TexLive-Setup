@@ -3,5 +3,5 @@
 just run
 
 ```bash
-./Latex_Setup.sh
+./TexLive_Setup.sh
 ```
